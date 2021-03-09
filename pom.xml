@@ -1,12 +1,24 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>co.com.jcga</groupId>
   <artifactId>clean-arch-quarkus</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-
+  <url>https://www.sourced-bvba.be</url>
+  <licenses>
+    <license>
+      <name>AGPL 3.0</name>
+      <url>http://opensource.org/licenses/AGPL-3.0</url>
+    </license>
+  </licenses>
+  <modules>
+    <module>configuration</module>
+    <module>dataprovider</module>
+    <module>domain</module>
+    <module>entrypoint</module>
+  </modules>
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -20,23 +32,6 @@
     <quarkus.platform.version>1.2.1.Final</quarkus.platform.version>
     <surefire-plugin.version>2.22.1</surefire-plugin.version>
   </properties>
-
-  <licenses>
-    <license>
-      <name>AGPL 3.0</name>
-      <url>http://opensource.org/licenses/AGPL-3.0</url>
-    </license>
-  </licenses>
-
-  <url>https://www.sourced-bvba.be</url>
-
-  <modules>
-    <module>configuration</module>
-    <module>dataprovider</module>
-    <module>domain</module>
-    <module>entrypoint</module>
-  </modules>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -54,7 +49,6 @@
         <artifactId>dataprovider</artifactId>
         <version>${project.version}</version>
       </dependency>
-
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
@@ -64,10 +58,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  <dependencies>
-
-  </dependencies>
-
   <build>
     <pluginManagement>
       <plugins>
@@ -91,7 +81,7 @@
               <path>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok-mapstruct-binding</artifactId>
-                <version>0.1.0</version>
+                <version>0.2.0</version>
               </path>
             </annotationProcessorPaths>
           </configuration>
@@ -116,7 +106,7 @@
       <plugin>
         <groupId>org.jboss.jandex</groupId>
         <artifactId>jandex-maven-plugin</artifactId>
-       <version>1.0.7</version>
+        <version>1.0.7</version>
         <executions>
           <execution>
             <id>make-index</id>

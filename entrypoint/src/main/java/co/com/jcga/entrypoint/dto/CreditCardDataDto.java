@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaymentParamsDto {
+public class CreditCardDataDto {
 
-	private UserDataDto userDataDto;
-	private CreditCardDataDto creditCardDataDto;
-	private Double value;
-	@JsonProperty("transaction_type")
-	private TransactionTypeDto transactionTypeDto;
+	@JsonProperty("credit_card_number")
+	private String creditCardNumber;
+	@JsonProperty("expire_date")
+	private String expireDate;
+	private String cvv;
 }

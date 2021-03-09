@@ -9,6 +9,9 @@
   </parent>
 
   <artifactId>dataprovider</artifactId>
+  <properties>
+    <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -48,6 +51,27 @@
       <artifactId>lombok</artifactId>
       <version>1.18.18</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${org.mapstruct.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct-processor</artifactId>
+      <version>${org.mapstruct.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

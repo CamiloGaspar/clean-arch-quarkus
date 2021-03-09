@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import co.com.jcga.converter.ProviderConverter;
+import co.com.jcga.database.model.UserModel;
+import co.com.jcga.database.repository.UserRepository;
 import co.com.jcga.entity.Payment;
 import co.com.jcga.entity.PaymentParams;
 import co.com.jcga.provider.PaymentsProvider;
@@ -40,8 +43,17 @@ public class PaymentsProviderImpl implements PaymentsProvider {
 
 	private final PaymentRestClient paymentRestClient;
 
+	private final UserRepository userRepository;
+
+	private final ProviderConverter providerConverter;
+
 	@Inject
-	public PaymentsProviderImpl(@ConfigProperty(name = "payment.rest.client.url") final Optional<String> paymentUrl) {
+	public PaymentsProviderImpl(@ConfigProperty(name = "payment.rest.client.url") final Optional<String> paymentUrl,
+								final UserRepository userRepository,
+								final ProviderConverter providerConverter) {
+
+		this.userRepository = userRepository;
+		this.providerConverter = providerConverter;
 
 		final var logging = new HttpLoggingInterceptor();
 		logging.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -105,6 +117,10 @@ public class PaymentsProviderImpl implements PaymentsProvider {
 
 	private PaymentRequest buildPaymentRequest(final PaymentParams paymentParams) {
 
+		final var user = userRepository.findById(paymentParams.getUserDataDto().getEmail());
+
+		final var buyer = providerConverter.toBuyerRequest(user);
+		final var payer = providerConverter.toPayerRequest(user);
 		final var apiKey = "4Vj8eK4rloUd272L48hsrarnUA";
 		final var merchantId = "508029";
 		final var referenceCode = "TEST_" + Instant.now().toString();
@@ -116,16 +132,6 @@ public class PaymentsProviderImpl implements PaymentsProvider {
 		additionalValues.put("TX_VALUE", TxValues.builder().currency(currency).value(txValue).build());
 		final var extraParameters = new HashMap<String, Object>();
 		extraParameters.put("INSTALLMENTS_NUMBER", 1);
-
-		final var address = Address.builder()
-								   .city("Bogotá")
-								   .country("CO")
-								   .phone("3138199193")
-								   .postalCode("111411")
-								   .state("Bogotá D.C.")
-								   .street1("Cll 1 # 2 - 3")
-								   .street2("")
-								   .build();
 
 		return PaymentRequest.builder()
 							 .command("SUBMIT_TRANSACTION")
@@ -143,32 +149,18 @@ public class PaymentsProviderImpl implements PaymentsProvider {
 																 .signature(signature)
 																 .notifyUrl("https//www.test.com")
 																 .additionalValues(additionalValues)
-																 .buyer(Buyer.builder()
-																			 .merchantBuyerId(merchantId)
-																			 .contactPhone("3192931243")
-																			 .dniNumber("123456")
-																			 .emailAddress(paymentParams.getEmail())
-																			 .fullName("Camilo Gaspar")
-																			 .shippingAddress(address)
-																			 .build())
-																 .shippingAddress(address)
+																 .buyer(buyer)
+																 .shippingAddress(buyer.getShippingAddress())
 																 .build())
-													 .payer(Payer.builder()
-																 .merchantPayerId(merchantId)
-																 .contactPhone("3192931243")
-																 .dniNumber("123456")
-																 .emailAddress(paymentParams.getEmail())
-																 .fullName("Camilo Gaspar")
-																 .billingAddress(address)
-																 .build())
+													 .payer(payer)
 													 .creditCard(CreditCard.builder()
 																		   .name("APPROVED")
-																		   .expirationDate(paymentParams.getExpireDate())
-																		   .number(paymentParams.getCreditCardNumber())
-																		   .securityCode(paymentParams.getCvv())
+																		   .expirationDate(paymentParams.getCreditCardDataDto().getExpireDate())
+																		   .number(paymentParams.getCreditCardDataDto().getCreditCardNumber())
+																		   .securityCode(paymentParams.getCreditCardDataDto().getCvv())
 																		   .build())
 													 .extraParameters(extraParameters)
-													 .type("AUTHORIZATION_AND_CAPTURE")
+													 .type(paymentParams.getTransactionType().name())
 													 .paymentMethod("VISA")
 													 .paymentCountry("CO")
 													 .deviceSessionId("vghs6tvkcle931686k1900o6e1")

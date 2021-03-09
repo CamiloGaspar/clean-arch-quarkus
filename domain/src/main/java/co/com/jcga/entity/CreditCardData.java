@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaymentParams {
-
-	private UserData userDataDto;
-	private CreditCardData creditCardDataDto;
-	private TransactionType transactionType;
-	private Double value;
+public class CreditCardData {
+	private String creditCardNumber;
+	private String expireDate;
+	private String cvv;
 }

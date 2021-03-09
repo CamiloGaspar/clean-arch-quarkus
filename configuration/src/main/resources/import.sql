@@ -1,2 +1,2 @@
-insert into CustomerJpa(id, name) values(1, 'Joe');
-insert into CustomerJpa(id, name) values(2, 'Jim');
+INSERT INTO quarkus."user" (email, contact_phone, dni_number, full_name, merchant_id) VALUES ('camilo.gaspar10@gmail.com', '3192859238', '1092930497', 'Juan Camilo Gaspar', '508029');
+INSERT INTO quarkus.address (id, city, country, phone, postal_code, state, street_1, street_2, user_email) VALUES ('e7db37ce-c040-4722-a840-db98d45c477c', 'Bogotá', 'CO', '3189239485', '111411', 'Bogotá D.C.', 'Calle 1 # 2 3', null, 'camilo.gaspar10@gmail.com');
