@@ -17,9 +17,9 @@ public class PaymentParamsDto {
 	private String email;
 	private Double value;
 	@JsonProperty("credit_card_number")
-	private Long creditCardNumber;
+	private String creditCardNumber;
 	@JsonProperty("expire_date")
 	private String expireDate;
-	private Integer cvv;
+	private String cvv;
 
 }

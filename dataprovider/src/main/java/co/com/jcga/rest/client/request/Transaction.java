@@ -16,7 +16,7 @@ public class Transaction {
 	private final String type;
 	private final String paymentMethod;
 	private final String paymentCountry;
-	private final String deviceSessionID;
+	private final String deviceSessionId;
 	private final String ipAddress;
 	private final String cookie;
 	private final String userAgent;

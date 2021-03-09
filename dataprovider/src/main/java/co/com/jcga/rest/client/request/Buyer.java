@@ -7,7 +7,7 @@ import lombok.Getter;
 @Builder
 public class Buyer {
 
-	private final String merchantBuyerID;
+	private final String merchantBuyerId;
 	private final String fullName;
 	private final String emailAddress;
 	private final String contactPhone;

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import co.com.jcga.entity.Payment;
 import co.com.jcga.entity.PaymentParams;
@@ -22,26 +23,38 @@ import co.com.jcga.rest.client.request.Transaction;
 import co.com.jcga.rest.client.request.TxValues;
 import co.com.jcga.rest.client.response.PaymentResponse;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
 @ApplicationScoped
 @Slf4j
 public class PaymentsProviderImpl implements PaymentsProvider {
 
+	public static final int DEFAULT_TIMEOUT = 20;
+
 	private final PaymentRestClient paymentRestClient;
 
 	@Inject
-	public PaymentsProviderImpl(@ConfigProperty(name = "payment.rest.client.url") Optional<String> paymentUrl) {
+	public PaymentsProviderImpl(@ConfigProperty(name = "payment.rest.client.url") final Optional<String> paymentUrl) {
 
+		final var logging = new HttpLoggingInterceptor();
+		logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+		final var httpClient = new OkHttpClient.Builder();
+		httpClient.addInterceptor(logging)
+				  .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+				  .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
 		log.info(paymentUrl.toString());
 		final var retrofit = new Retrofit.Builder()
-				.baseUrl("https://sandbox.api.payulatam.com/payments-api/")
-				.addConverterFactory(GsonConverterFactory.create())
+				.baseUrl(paymentUrl.orElse("https://sandbox.api.payulatam.com/payments-api/"))
+				.addConverterFactory(JacksonConverterFactory.create())
+				.client(httpClient.build())
 				.build();
 		paymentRestClient = retrofit.create(PaymentRestClient.class);
 	}
@@ -85,7 +98,8 @@ public class PaymentsProviderImpl implements PaymentsProvider {
 
 		optionalPaymentResponse.ifPresentOrElse(
 				paymentResponse -> payment.date(paymentResponse.getTransactionResponse().getOperationDate())
-										  .message("Success payment"), () -> payment.message("Success payment"));
+										  .message(paymentResponse.getTransactionResponse().getResponseMessage()),
+				() -> payment.message("Success payment"));
 
 	}
 
@@ -104,14 +118,13 @@ public class PaymentsProviderImpl implements PaymentsProvider {
 		extraParameters.put("INSTALLMENTS_NUMBER", 1);
 
 		final var address = Address.builder()
-								   .city("")
-								   .country("")
-								   .phone("")
-								   .postalCode("")
-								   .state("")
-								   .street1("")
+								   .city("Bogotá")
+								   .country("CO")
+								   .phone("3138199193")
+								   .postalCode("111411")
+								   .state("Bogotá D.C.")
+								   .street1("Cll 1 # 2 - 3")
 								   .street2("")
-								   .state("")
 								   .build();
 
 		return PaymentRequest.builder()
@@ -123,45 +136,46 @@ public class PaymentsProviderImpl implements PaymentsProvider {
 											   .build())
 							 .transaction(Transaction.builder()
 													 .order(Order.builder()
-																 .accountID("512321")
+																 .accountId("512321")
 																 .referenceCode(referenceCode)
-																 .description("Houston payment test")
+																 .description("payment test")
 																 .language("es")
 																 .signature(signature)
-																 .notifyURL("https//www.test.com")
+																 .notifyUrl("https//www.test.com")
 																 .additionalValues(additionalValues)
 																 .buyer(Buyer.builder()
-																			 .merchantBuyerID(merchantId)
-																			 .contactPhone("")
-																			 .dniNumber("")
+																			 .merchantBuyerId(merchantId)
+																			 .contactPhone("3192931243")
+																			 .dniNumber("123456")
 																			 .emailAddress(paymentParams.getEmail())
-																			 .fullName("")
+																			 .fullName("Camilo Gaspar")
 																			 .shippingAddress(address)
 																			 .build())
 																 .shippingAddress(address)
 																 .build())
 													 .payer(Payer.builder()
-																 .merchantPayerID(merchantId)
-																 .contactPhone("")
-																 .dniNumber("")
-																 .emailAddress("")
-																 .fullName("")
+																 .merchantPayerId(merchantId)
+																 .contactPhone("3192931243")
+																 .dniNumber("123456")
+																 .emailAddress(paymentParams.getEmail())
+																 .fullName("Camilo Gaspar")
 																 .billingAddress(address)
 																 .build())
 													 .creditCard(CreditCard.builder()
 																		   .name("APPROVED")
-																		   .expirationDate("2022/12")
-																		   .number("4097440000000004")
-																		   .securityCode("321")
+																		   .expirationDate(paymentParams.getExpireDate())
+																		   .number(paymentParams.getCreditCardNumber())
+																		   .securityCode(paymentParams.getCvv())
 																		   .build())
 													 .extraParameters(extraParameters)
 													 .type("AUTHORIZATION_AND_CAPTURE")
 													 .paymentMethod("VISA")
 													 .paymentCountry("CO")
-													 .deviceSessionID("vghs6tvkcle931686k1900o6e1")
-													 .ipAddress("")
-													 .cookie("")
-													 .userAgent("")
+													 .deviceSessionId("vghs6tvkcle931686k1900o6e1")
+													 .ipAddress("127.0.0.1")
+													 .cookie("pt1t38347bs6jc9ruv2ecpv7o2")
+													 .userAgent(
+															 "Mozilla/5.0 (Windows NT 5.1; rv:18.0) Gecko/20100101 Firefox/18.0")
 													 .build())
 							 .test(true)
 							 .build();

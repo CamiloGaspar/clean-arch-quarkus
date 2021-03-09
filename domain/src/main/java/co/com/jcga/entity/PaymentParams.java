@@ -13,7 +13,7 @@ public class PaymentParams {
 
 	private String email;
 	private Double value;
-	private Long creditCardNumber;
+	private String creditCardNumber;
 	private String expireDate;
-	private Integer cvv;
+	private String cvv;
 }
